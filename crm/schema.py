@@ -3,6 +3,7 @@ from graphene_django import DjangoObjectType
 from django.db import transaction
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
+from graphene_django.filter import DjangoFilterConnectionField
 import re
 from decimal import Decimal
 from django.utils import timezone
@@ -148,7 +149,6 @@ class CreateProduct(graphene.Mutation):
                 )
         except Exception as e:
             return CreateProduct(success=False, message=str(e))
-        
 
 class CreateOrder(graphene.Mutation):
     class Arguments:
@@ -182,8 +182,30 @@ class CreateOrder(graphene.Mutation):
             order=order,
             message="Order created."
         )
+
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
     bulk_create_customers = BulkCreateCustomers.Field()
     create_product = CreateProduct.Field()
     create_order = CreateOrder.Field()
+
+class Query(graphene.ObjectType):
+    hello = graphene.String(default_value="Hello, GraphQL!")
+    
+    all_customers = DjangoFilterConnectionField(
+        CustomerType, 
+        order_by=graphene.List(of_type=graphene.String),filter=graphene.String(),
+        search=graphene.String()
+    )
+    
+       
+    all_products = DjangoFilterConnectionField(
+        ProductType, 
+        order_by=graphene.List(of_type=graphene.String),filter=graphene.String(),
+        search=graphene.String()
+    )
+    all_orders = DjangoFilterConnectionField(
+        OrderType, 
+        order_by=graphene.List(of_type=graphene.String),filter=graphene.String(),
+        search=graphene.String()
+    )

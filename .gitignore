@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 *.class
 *.sqlite3
+migrations/
 venv/
 .env
 *.log
