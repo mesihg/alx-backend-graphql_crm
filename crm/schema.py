@@ -10,6 +10,7 @@ from django.utils import timezone
 from graphql import GraphQLError
 
 from .models import Customer, Product, Order
+from crm.models import Product
 
 # GraphQL types
 
