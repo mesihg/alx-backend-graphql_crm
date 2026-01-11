@@ -209,3 +209,28 @@ class Query(graphene.ObjectType):
         order_by=graphene.List(of_type=graphene.String),filter=graphene.String(),
         search=graphene.String()
     )
+
+class UpdateLowStockProducts(graphene.Mutation):
+    class Arguments:
+        pass  # no arguments needed
+
+    success = graphene.Boolean()
+    message = graphene.String()
+    updated_products = graphene.List(ProductType)
+
+    def mutate(self, info):
+        low_stock_products = Product.objects.filter(stock__lt=10)
+        updated_products = []
+        for product in low_stock_products:
+            product.stock += 10  # simulate restock
+            product.save()
+            updated_products.append(product)
+
+        return UpdateLowStockProducts(
+            success=True,
+            message=f"{len(updated_products)} products updated at {timezone.now()}",
+            updated_products=updated_products
+        )
+
+class Mutation(graphene.ObjectType):
+    update_low_stock_products = UpdateLowStockProducts.Field()
