@@ -28,3 +28,37 @@ def log_crm_heartbeat():
     except Exception as e:
         with open(log_file, "a") as f:
             f.write(f"{timestamp} GraphQL check failed: {e}\n")
+
+def update_low_stock():
+    url = "http://127.0.0.1:8000/graphql/"
+    query = """
+    mutation {
+        updateLowStockProducts {
+            success
+            message
+            updatedProducts {
+                id
+                name
+                stock
+            }
+        }
+    }
+    """
+
+    try:
+        response = requests.post(url, json={'query': query})
+        result = response.json()
+
+        log_file = "/tmp/low_stock_updates_log.txt"
+        with open(log_file, "a") as f:
+            f.write(f"\n--- {datetime.now()} ---\n")
+            if "errors" in result:
+                f.write("Errors: " + str(result["errors"]) + "\n")
+            else:
+                data = result["data"]["updateLowStockProducts"]
+                f.write(data["message"] + "\n")
+                for p in data["updatedProducts"]:
+                    f.write(f"{p['name']} updated stock: {p['stock']}\n")
+    except Exception as e:
+        with open("/tmp/low_stock_updates_log.txt", "a") as f:
+            f.write(f"\n--- {datetime.now()} ---\nError: {str(e)}\n")
